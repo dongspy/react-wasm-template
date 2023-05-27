@@ -1,6 +1,6 @@
 # react-wasm-template
 
-importing the wasm function compiled by rust using react
+using react to import the wasm function compiled by rust 
 
 
 ## install and run
@@ -13,7 +13,22 @@ cd ../react-app
 npm run dev
 ```
 
-vite.config.js
+## core code
+
+wasm/src/lib.rs
+
+```rust
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+pub fn add(a: i32, b: i32) -> i32 {
+    a + b
+}
+
+```
+
+
+react-app/vite.config.js
 
 ```javascript
 import { defineConfig } from 'vite'
@@ -28,5 +43,34 @@ export default defineConfig({
     wasm(),
     topLevelAwait()],
 })
+
+```
+
+react-app/src/wasm.jsx
+
+```javascript
+import React, { useEffect, useState } from 'react';
+
+function Wasm() {
+  const [result, setResult] = useState(null);
+
+  useEffect(() => {
+    import('../../wasm/pkg')
+      .then(module => {
+        const a = 2;
+        const b = 3;
+        const sum = module.add(a, b); // 使用 Rust 的 WebAssembly 模块
+        setResult(sum);
+      })
+      .catch(err => {
+        // Handle error
+        console.error("Error importing Wasm module:", err);
+      });
+  }, []);
+
+  return <div>using rust add function, 3 + 2 is {result}</div>;
+}
+
+export default Wasm;
 
 ```
